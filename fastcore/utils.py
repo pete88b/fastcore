@@ -9,8 +9,8 @@ __all__ = ['ifnone', 'maybe_attr', 'basic_repr', 'get_class', 'mk_class', 'wrap_
            'partialler', 'mapped', 'instantiate', 'using_attr', 'log_args', 'Self', 'Self', 'bunzip', 'join_path_file',
            'remove_patches_path', 'sort_by_run', 'PrettyString', 'round_multiple', 'even_mults', 'num_cpus',
            'add_props', 'change_attr', 'change_attrs', 'ContextManagers', 'set_num_threads', 'ProcessPoolExecutor',
-           'parallel', 'parallel_chunks', 'run_procs', 'parallel_gen', 'in_ipython', 'in_colab', 'in_jupyter',
-           'in_notebook', 'IN_NOTEBOOK', 'IN_JUPYTER', 'IN_COLAB', 'IN_IPYTHON']
+           'parallel', 'parallel_chunks', 'run_procs', 'parallel_gen', 'ipython_shell', 'in_ipython', 'in_colab',
+           'in_jupyter', 'in_notebook', 'IN_NOTEBOOK', 'IN_JUPYTER', 'IN_COLAB', 'IN_IPYTHON']
 
 # Cell
 from .imports import *
@@ -128,7 +128,9 @@ def snake2camel(s):
 
 # Cell
 def class2attr(self, cls_name):
+    "Return the snake-cased name of the class.  Additionally, remove the substring `cls_name` only if it is a substring at the **end** of the string."
     return camel2snake(re.sub(rf'{cls_name}$', '', self.__class__.__name__) or cls_name.lower())
+
 
 # Cell
 def hasattrs(o,attrs):
@@ -168,7 +170,7 @@ def replicate(item,match):
 
 # Cell
 def uniqueify(x, sort=False, bidir=False, start=None):
-    "Return the unique elements in `x`, optionally `sort`-ed, optionally return the reverse correspondence."
+    "Return the unique elements in `x`, optionally `sort`-ed, optionally return the reverse correspondence, optionally prepended with a list or tuple of elements."
     res = L(x).unique()
     if start is not None: res = start+res
     if sort: res.sort()
@@ -765,9 +767,15 @@ def parallel_gen(cls, items, n_workers=defaults.cpus, **kwargs):
     yield from run_procs(f, done, L(batches,idx).zip())
 
 # Cell
+def ipython_shell():
+    "Same as `get_ipython` but returns `False` if not in IPython"
+    try: return get_ipython()
+    except NameError: return False
+
+# Cell
 def in_ipython():
-    "Check if the code is running in the ipython environment (including jupyter)"
-    return 'IPython.core' in sys.modules
+    "Check if code is running in some kind of IPython environment"
+    return bool(ipython_shell())
 
 # Cell
 def in_colab():
@@ -778,7 +786,7 @@ def in_colab():
 def in_jupyter():
     "Check if the code is running in a jupyter notebook"
     if not in_ipython(): return False
-    return get_ipython().__class__.__name__ == 'ZMQInteractiveShell'
+    return ipython_shell().__class__.__name__ == 'ZMQInteractiveShell'
 
 # Cell
 def in_notebook():
