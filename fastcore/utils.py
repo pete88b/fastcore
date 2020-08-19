@@ -84,14 +84,21 @@ class ignore_exceptions:
 # Cell
 def _find_in_stack(fr, nm):
     if fr is None: raise Exception(f"Failed to find {nm}")
-    try: return fr.f_locals[nm]
+    f_locals = fr.f_locals
+    if 'kwargs' in f_locals: f_locals.update(f_locals['kwargs'])
+    try: return f_locals[nm]
     except KeyError: return _find_in_stack(fr.f_back, nm)
 
 # Cell
 def store_attr(self, nms=None):
     "Store params named in comma-separated `nms` from calling context into attrs in `self`"
-    if nms is None: nms = self.store_attrs
+    if nms is None: nms = getattr(self,'store_attrs',None)
     fr = inspect.currentframe().f_back
+    if nms is None:
+        f_locals = fr.f_locals
+        if 'kwargs' in f_locals: f_locals.update(f_locals['kwargs'])
+        nms = ','.join([k for k in f_locals.keys() if k not in ['self','args','kwargs']])
+    if not hasattr(self,'store_attrs'): setattr(self,'store_attrs',nms)
     for n in re.split(', *', nms): setattr(self,n,_find_in_stack(fr, n))
 
 # Cell
