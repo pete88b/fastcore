@@ -11,19 +11,19 @@ entries:
       url: /
     - output: web,pdf
       title: Test
-      url: /test
+      url: test.html
     - output: web,pdf
       title: Core
-      url: /foundation
+      url: foundation.html
     - output: web,pdf
       title: Utility functions
-      url: /utils
+      url: utils.html
     - output: web,pdf
       title: Type dispatch
-      url: /dispatch
+      url: dispatch.html
     - output: web,pdf
       title: Transforms
-      url: /transform
+      url: transform.html
     output: web
     title: fastcore
   output: web
